@@ -1,0 +1,15 @@
+{
+  "name": "statistics-telegram-client",
+  "version": "0.0.1",
+  "description": "Telegram client for checking your statistics",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@mtproto/core": "^6.2.0"
+  }
+}
