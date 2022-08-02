@@ -2,11 +2,12 @@ const input = require('input')
 const path = require('path')
 const { TelegramClient } = require('telegram')
 const { StringSession } = require('telegram/sessions')
-const { getUserStringSession, setUserStringSession } = require('./utils/userSessionStorage')
+const { createStorageIfNotExists, getUserStringSession, setUserStringSession } = require('./utils/userSessionStorage')
 
 const STORAGE_PATH = path.resolve('data', 'userSessionStorage.json')
 
 const initTelegramClient = async () => {
+    createStorageIfNotExists()
     const API_ID = Number(process.env.API_ID)
     const API_HASH = String(process.env.API_HASH)
     const STRING_SESSION = new StringSession(getUserStringSession(STORAGE_PATH))
