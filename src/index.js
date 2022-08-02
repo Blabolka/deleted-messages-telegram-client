@@ -1,6 +1,6 @@
 const { TelegramClient, Api } = require('telegram')
 const { StringSession } = require('telegram/sessions')
-// const input = require("input")
+const input = require("input")
 
 const apiId = Number(process.env.API_ID);
 const apiHash = String(process.env.API_HASH);
