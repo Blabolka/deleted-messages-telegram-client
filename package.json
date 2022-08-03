@@ -13,6 +13,7 @@
   "dependencies": {
     "dotenv-cli": "^6.0.0",
     "input": "^1.0.1",
+    "node-cron": "3.0.0",
     "telegram": "^2.10.2"
   },
   "devDependencies": {
