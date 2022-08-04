@@ -5,8 +5,7 @@ const createUserTypingMessageText = (fullUserInfo, commonChats, actionData) => {
     const usernameValidated = username ? ' ' + `(@${username})` : ''
 
     const message = [
-        '‼ STATISTICS TELEGRAM CLIENT ‼',
-        `${firstName}${lastNameValidated}${usernameValidated}`,
+        `User: ${firstName}${lastNameValidated}${usernameValidated}`,
         'Action type: ' + actionData.actionType,
         'Action date: ' + new Date(actionData.actionDate).toISOString(),
     ]
