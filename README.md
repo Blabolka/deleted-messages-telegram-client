@@ -1,5 +1,5 @@
 # What can you track right now:
-- [Users who started typing a message but didn't send it](#Users who started typing a message but didn't send it)
+- [Users who started typing a message but didn't send it](#users-who-started-typing-a-message-but-didn't-send-it)
 
 # How to get started
 - Create _.env_ file based on _.env.example_ with your API_KEY and API_HASH. More information can be found [here](https://core.telegram.org/api/obtaining_api_id)
