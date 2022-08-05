@@ -6,6 +6,7 @@ const createUserTypingMessageText = (fullUserInfo, commonChats, actionData) => {
 
     const message = [
         `User: ${firstName}${lastNameValidated}${usernameValidated}`,
+        `User id: ${actionData.userId}`,
         'Action type: ' + actionData.actionType,
         'Action date: ' + new Date(actionData.actionDate).toISOString(),
     ]
