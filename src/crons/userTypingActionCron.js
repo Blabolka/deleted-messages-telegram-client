@@ -4,8 +4,7 @@ const { createUserTypingMessageText } = require('../utils/userActionTyping')
 const userTypingActionManager = require('../services/UserTypingActionManager')
 const { getChatHistoryMessagesSafe, getUserSafe, getUserCommonChatsSafe } = require('../api/safeApiCalls')
 
-const TIME_TO_FIRE_AFTER_USER_TYPING_ACTION = 1 // 3 minutes
-// const TIME_TO_FIRE_AFTER_USER_TYPING_ACTION = 60 * 1000 * 3 // 3 minutes
+const TIME_TO_FIRE_AFTER_USER_TYPING_ACTION = 60 * 1000 * 3 // 3 minutes
 
 const initUserTypingActionCron = (client) => {
     cron.schedule('* * * * *', async () => {
