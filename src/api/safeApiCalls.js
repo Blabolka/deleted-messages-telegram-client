@@ -54,8 +54,40 @@ const getUserSafe = async (client, userId) => {
     }
 }
 
+const createChannelSafe = async (client, options) => {
+    try {
+        const channelCreationResponse = await client.invoke(new Api.channels.CreateChannel(options))
+
+        if (
+            channelCreationResponse &&
+            Array.isArray(channelCreationResponse.chats) &&
+            channelCreationResponse.chats.length
+        ) {
+            return channelCreationResponse.chats[0]
+        }
+
+        return null
+    } catch (err) {
+        console.log(err)
+        return null
+    }
+}
+
+const forwardMessages = async (client, options) => {
+    try {
+        await client.invoke(new Api.messages.ForwardMessages(options))
+
+        return true
+    } catch (err) {
+        console.log(err)
+        return false
+    }
+}
+
 module.exports = {
     getChatHistoryMessagesSafe,
     getUserCommonChatsSafe,
     getUserSafe,
+    createChannelSafe,
+    forwardMessages,
 }
