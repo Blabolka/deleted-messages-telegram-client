@@ -1,4 +1,5 @@
 const logger = require('./Logger')
+const { Api } = require('telegram')
 
 class TelegramClientCommands {
     constructor(client, telegramClientUserId) {
@@ -11,6 +12,8 @@ class TelegramClientCommands {
      * @param action Action from event listener
      */
     resolveCommand(action) {
+        if (!(action instanceof Api.UpdateNewMessage)) return
+
         try {
             if (!action?.message?.message || action?.message?.peerId?.userId?.value !== this.telegramClientUserId) {
                 return

@@ -1,3 +1,5 @@
+const { Api } = require('telegram')
+
 class UserTypingActionManager {
     constructor() {
         this.userTypingStorageMap = new Map()
@@ -25,6 +27,8 @@ class UserTypingActionManager {
     }
 
     addAction(action) {
+        if (!(action instanceof Api.UpdateUserTyping)) return
+
         if (action && action.userId) {
             const actionKey = action.userId.value
             const actionValue = {
