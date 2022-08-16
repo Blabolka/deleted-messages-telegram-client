@@ -15,6 +15,8 @@ class UserChatMessagesBackupManager {
                 this.backupShortChatMessageToChannel(action)
             } else if (action instanceof Api.UpdateNewMessage) {
                 this.backupNewMessageToChannel(action)
+            } else if (action instanceof Api.UpdateNewChannelMessage) {
+                this.backupNewChannelMessageToChannel(action)
             }
         }
     }
@@ -41,6 +43,15 @@ class UserChatMessagesBackupManager {
         if (action.message && !action.message.out) {
             forwardMessages(this.client, {
                 fromPeer: action.message.senderId.value,
+                id: [action.message.id],
+                toPeer: this.backupChannelId,
+            })
+        }
+    }
+    async backupNewChannelMessageToChannel(action) {
+        if (action.message && !action.message.out) {
+            forwardMessages(this.client, {
+                fromPeer: action.message.peerId.channelId.value,
                 id: [action.message.id],
                 toPeer: this.backupChannelId,
             })
