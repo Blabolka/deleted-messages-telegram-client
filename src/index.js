@@ -13,11 +13,11 @@ initTelegramClient().then(async (client) => {
     const telegramClientUser = await client.getMe()
     const { value: telegramClientUserId } = telegramClientUser.id
 
+    initUserTypingActionCron(client)
+
     console.log('Setup message backups channel')
     const chatMessagesBackupManager = new UserChatMessagesBackupManager(client)
     await chatMessagesBackupManager.setupBackupChannel()
-
-    initUserTypingActionCron(client)
 
     console.log('Telegram client is running!')
     client.addEventHandler((action) => {

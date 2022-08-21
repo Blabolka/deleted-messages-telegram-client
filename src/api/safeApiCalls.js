@@ -73,7 +73,7 @@ const createChannelSafe = async (client, options) => {
     }
 }
 
-const forwardMessages = async (client, options) => {
+const forwardMessagesSafe = async (client, options) => {
     try {
         await client.invoke(new Api.messages.ForwardMessages(options))
 
@@ -84,10 +84,22 @@ const forwardMessages = async (client, options) => {
     }
 }
 
+const getNotifyExceptionsSafe = async (client, options) => {
+    try {
+        const result = await client.invoke(new Api.account.GetNotifyExceptions(options))
+
+        return result || null
+    } catch (err) {
+        console.log(err)
+        return null
+    }
+}
+
 module.exports = {
     getChatHistoryMessagesSafe,
     getUserCommonChatsSafe,
     getUserSafe,
     createChannelSafe,
-    forwardMessages,
+    forwardMessagesSafe,
+    getNotifyExceptionsSafe,
 }
