@@ -1,58 +1,65 @@
 const { Api } = require('telegram')
-const { createChannelSafe, forwardMessages } = require('../api/safeApiCalls')
+const { createChannelSafe, forwardMessagesSafe, getNotifyExceptionsSafe } = require('../api/safeApiCalls')
 
 class UserChatMessagesBackupManager {
-    constructor(client) {
+    constructor(client, telegramClientUserId) {
         this.client = client
         this.backupChannelId = null
+        this.telegramClientUserId = telegramClientUserId
     }
 
     async backupMessageToChannel(action) {
-        if (this.backupChannelId) {
-            if (action instanceof Api.UpdateShortMessage) {
-                this.backupShortMessageToChannel(action)
-            } else if (action instanceof Api.UpdateShortChatMessage) {
-                this.backupShortChatMessageToChannel(action)
-            } else if (action instanceof Api.UpdateNewMessage) {
-                this.backupNewMessageToChannel(action)
-            } else if (action instanceof Api.UpdateNewChannelMessage) {
-                this.backupNewChannelMessageToChannel(action)
-            }
+        if (
+            this.backupChannelId &&
+            (action instanceof Api.UpdateShortMessage ||
+                action instanceof Api.UpdateShortChatMessage ||
+                action instanceof Api.UpdateNewMessage ||
+                action instanceof Api.UpdateNewChannelMessage)
+        ) {
+            if (!(await this.isChatNotificationsIsTurnOn(action))) return
+
+            this.backupNewMessageToChannel(action)
         }
     }
 
-    async backupShortMessageToChannel(action) {
-        if (!action.out) {
-            forwardMessages(this.client, {
-                fromPeer: action.userId.value,
-                id: [action.id],
-                toPeer: this.backupChannelId,
+    async isChatNotificationsIsTurnOn(action) {
+        const allChatsNotifyExceptions = await getNotifyExceptionsSafe(this.client, { peer: this.telegramClientUserId })
+        if (!Array.isArray(allChatsNotifyExceptions?.updates)) return false
+
+        let isNotificationIsTurnOff = false
+        if (action?.message?.peerId?.className === 'PeerUser' || action?.userId?.value) {
+            const userId = action?.message?.peerId?.userId?.value || action.userId?.value
+            isNotificationIsTurnOff = allChatsNotifyExceptions.updates.some((update) => {
+                return update?.peer?.peer?.userId?.value === userId && update?.notifySettings?.muteUntil > 0
+            })
+        } else if (action?.message?.peerId?.className === 'PeerChat' || action?.chatId?.value) {
+            const chatId = action?.message?.peerId?.chatId?.value || action?.chatId?.value
+            isNotificationIsTurnOff = allChatsNotifyExceptions.updates.some((update) => {
+                return update?.peer?.peer?.chatId?.value === chatId && update?.notifySettings?.muteUntil > 0
+            })
+        } else if (action?.message?.peerId?.className === 'PeerChannel') {
+            const channelId = action?.message?.peerId?.channelId?.value
+            isNotificationIsTurnOff = allChatsNotifyExceptions.updates.some((update) => {
+                return update?.peer?.peer?.channelId?.value === channelId && update?.notifySettings?.muteUntil > 0
             })
         }
+
+        return !isNotificationIsTurnOff
     }
-    async backupShortChatMessageToChannel(action) {
-        if (!action.out) {
-            forwardMessages(this.client, {
-                fromPeer: action.fromId.value,
-                id: [action.id],
-                toPeer: this.backupChannelId,
-            })
-        }
-    }
+
     async backupNewMessageToChannel(action) {
-        if (action.message && !action.message.out) {
-            forwardMessages(this.client, {
-                fromPeer: action.message.senderId.value,
-                id: [action.message.id],
-                toPeer: this.backupChannelId,
-            })
-        }
-    }
-    async backupNewChannelMessageToChannel(action) {
-        if (action.message && !action.message.out) {
-            forwardMessages(this.client, {
-                fromPeer: action.message.peerId.channelId.value,
-                id: [action.message.id],
+        const isMessageOut = action?.message?.out || action.out
+        if (!isMessageOut) {
+            const fromPeerId =
+                action?.message?.peerId?.channelId?.value ||
+                action?.message?.senderId?.value ||
+                action?.fromId?.value ||
+                action?.userId?.value
+            const messageId = action?.message?.id || action?.id
+
+            forwardMessagesSafe(this.client, {
+                fromPeer: fromPeerId,
+                id: [messageId],
                 toPeer: this.backupChannelId,
             })
         }
