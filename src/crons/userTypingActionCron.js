@@ -1,6 +1,6 @@
 const cron = require('node-cron')
 const logger = require('../services/Logger')
-const { createUserTypingMessageText } = require('../utils/userActionTyping')
+const { createUserTypingMessageText } = require('../utils/userFormatUtils')
 const userTypingActionManager = require('../services/UserTypingActionManager')
 const { getChatHistoryMessagesSafe, getUserSafe, getUserCommonChatsSafe } = require('../api/safeApiCalls')
 
