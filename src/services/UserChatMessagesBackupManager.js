@@ -13,6 +13,7 @@ const {
     forwardMessagesSafe,
     getNotifyExceptionsSafe,
 } = require('../api/safeApiCalls')
+const logger = require('../services/Logger')
 
 class UserChatMessagesBackupManager {
     constructor(client, telegramClientUserId) {
@@ -128,6 +129,7 @@ class UserChatMessagesBackupManager {
     }
 
     async notifyUserAboutDeletedMessages(action) {
+        let processTime = new Date()
         let deletedMessageNotificationText
         if (action instanceof Api.UpdateDeleteChannelMessages) {
             const { value: deleteMessagesChannelId } = action.channelId
@@ -169,7 +171,16 @@ class UserChatMessagesBackupManager {
             }
         }
 
-        console.log(deletedMessageNotificationText)
+        logger.log(
+            'INFO',
+            'Deleted message handler',
+            deletedMessageNotificationText,
+            new Date() - processTime.getTime(),
+        )
+
+        if (process.env.SAVED_MESSAGES_LOGGER_ENABLED === 'true') {
+            await this.client.sendMessage('me', { message: deletedMessageNotificationText })
+        }
     }
 
     async createBackupChannel() {
