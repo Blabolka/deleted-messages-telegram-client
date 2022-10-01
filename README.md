@@ -1,7 +1,7 @@
 # What you can track right now:
 
 - [Users who started typing a message but didn't send it](#users-who-started-typing-a-message-but-didnt-send-it)
-- [User's, chat's and channel's deleted messages](#users-chats-and-channels-deleted-messages)
+- [Chat's, group's and channel's deleted messages](#chats-groups-and-channels-deleted-messages)
 
 # How to get started
 
@@ -38,7 +38,7 @@ Common chats: *list of common chats*
 
 If another event is sent within three minutes, the old event is overwritten by the new one.
 
-### User's, chat's and channel's deleted messages
+### Chat's, group's and channel's deleted messages
 
 The client automatically creates a private channel where all messages from chats, groups and channels will be forwarded.
 
