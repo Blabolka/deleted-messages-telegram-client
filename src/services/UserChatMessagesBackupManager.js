@@ -1,10 +1,5 @@
 const { Api } = require('telegram')
-const {
-    createChannelDeleteMessageText,
-    createSomeChannelDeleteMessageText,
-    createUserDeleteMessageText,
-    createSomeUserDeleteMessageText,
-} = require('../utils/userFormatUtils')
+const { createChannelDeleteMessageText, createUserDeleteMessageText } = require('../utils/userFormatUtils')
 const {
     getUserSafe,
     getChatSafe,
@@ -35,7 +30,7 @@ class UserChatMessagesBackupManager {
                 action instanceof Api.UpdateNewMessage ||
                 action instanceof Api.UpdateNewChannelMessage)
         ) {
-            if (!(await this.isChatNotificationsIsTurnOn(action))) return
+            if (!(await this.isChatNotificationsIsTurnOnByAction(action))) return
 
             this.backupNewMessageToChannel(action)
         } else if (action instanceof Api.UpdateDeleteMessages || action instanceof Api.UpdateDeleteChannelMessages) {
@@ -43,7 +38,7 @@ class UserChatMessagesBackupManager {
         }
     }
 
-    async isChatNotificationsIsTurnOn(action) {
+    async isChatNotificationsIsTurnOnByAction(action) {
         const allChatsNotifyExceptions = await getNotifyExceptionsSafe(this.client, { peer: this.telegramClientUserId })
         if (!Array.isArray(allChatsNotifyExceptions?.updates)) return false
 
@@ -148,8 +143,6 @@ class UserChatMessagesBackupManager {
                     detailedDeletedMessageData.sentAt,
                     deletedMessagesIds,
                 )
-            } else {
-                deletedMessageNotificationText = createSomeChannelDeleteMessageText(deletedMessagesIds)
             }
         } else {
             const { messages: deletedMessagesIds } = action
@@ -166,8 +159,6 @@ class UserChatMessagesBackupManager {
                     detailedDeletedMessageData.sentAt,
                     deletedMessagesIds,
                 )
-            } else {
-                deletedMessageNotificationText = createSomeUserDeleteMessageText(deletedMessagesIds)
             }
         }
 

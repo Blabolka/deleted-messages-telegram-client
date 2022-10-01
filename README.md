@@ -44,4 +44,4 @@ The client automatically creates a private channel where all messages from chats
 
 When someone deletes a message, client try to find this message in temporary storage. If the client finds the message,
 it sends detailed information about deleted message, after that, you can find full deleted message in the private
-channel created by client, otherwise you got simple message about message deletion.
+channel created by client.

@@ -38,11 +38,6 @@ const createChannelDeleteMessageText = (fullChannelInfo, deletedMessageSentAtDat
     return message.join('\n')
 }
 
-const createSomeChannelDeleteMessageText = (deletedMessagesIds) => {
-    const pluralMessagesWord = deletedMessagesIds.length > 1 ? 'messages' : 'message'
-    return `Some channel delete ${pluralMessagesWord} at: ${new Date().toISOString()}`
-}
-
 const createUserDeleteMessageText = (fullUserInfo, fullChatData, deletedMessageSentAtDate, deletedMessagesIds) => {
     const { firstName, lastName, username } = fullUserInfo
     const chatTitle = (fullChatData && fullChatData.title) || ''
@@ -63,15 +58,8 @@ const createUserDeleteMessageText = (fullUserInfo, fullChatData, deletedMessageS
     return message.filter((item) => item).join('\n')
 }
 
-const createSomeUserDeleteMessageText = (deletedMessagesIds) => {
-    const pluralMessagesWord = deletedMessagesIds.length > 1 ? 'messages' : 'message'
-    return `Some user delete ${pluralMessagesWord} at: ${new Date().toISOString()}`
-}
-
 module.exports = {
     createUserTypingMessageText,
     createChannelDeleteMessageText,
-    createSomeChannelDeleteMessageText,
     createUserDeleteMessageText,
-    createSomeUserDeleteMessageText,
 }
