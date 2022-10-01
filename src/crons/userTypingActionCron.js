@@ -1,12 +1,11 @@
 const cron = require('node-cron')
 const logger = require('../services/Logger')
 const { createUserTypingMessageText } = require('../utils/userFormatUtils')
-const userTypingActionManager = require('../services/UserTypingActionManager')
 const { getChatHistoryMessagesSafe, getUserSafe, getUserCommonChatsSafe } = require('../api/safeApiCalls')
 
 const TIME_TO_FIRE_AFTER_USER_TYPING_ACTION = 60 * 1000 * 3 // 3 minutes
 
-const initUserTypingActionCron = (client) => {
+const initUserTypingActionCron = (client, userTypingActionManager) => {
     cron.schedule('* * * * *', async () => {
         const userActions = userTypingActionManager.getUsersAfterTimeAfterTyping(TIME_TO_FIRE_AFTER_USER_TYPING_ACTION)
         if (userActions.length) {

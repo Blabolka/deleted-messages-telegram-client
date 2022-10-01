@@ -7,13 +7,17 @@ class TelegramClientCommands {
         this.telegramClientUserId = telegramClientUserId
     }
 
+    processAction(action) {
+        if (!(action instanceof Api.UpdateNewMessage)) return
+
+        this.resolveCommand(action)
+    }
+
     /**
      * Resolves commands that sends in Saved Messages
      * @param action Action from event listener
      */
     resolveCommand(action) {
-        if (!(action instanceof Api.UpdateNewMessage)) return
-
         try {
             if (!action?.message?.message || action?.message?.peerId?.userId?.value !== this.telegramClientUserId) {
                 return

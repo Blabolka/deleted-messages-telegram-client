@@ -1,33 +1,15 @@
 const { Api } = require('telegram')
-const {
-    createChannelDeleteMessageText,
-    createSomeChannelDeleteMessageText,
-    createUserDeleteMessageText,
-    createSomeUserDeleteMessageText,
-} = require('../utils/userFormatUtils')
-const {
-    getUserSafe,
-    getChatSafe,
-    getChannelSafe,
-    createChannelSafe,
-    forwardMessagesSafe,
-    getNotifyExceptionsSafe,
-} = require('../api/safeApiCalls')
-const logger = require('../services/Logger')
+const { createChannelSafe, forwardMessagesSafe, getNotifyExceptionsSafe } = require('../api/safeApiCalls')
 
 class UserChatMessagesBackupManager {
-    constructor(client, telegramClientUserId) {
+    constructor(client, telegramClientUserId, userDeleteMessageNotificationManager) {
         this.client = client
         this.backupChannelId = null
         this.telegramClientUserId = telegramClientUserId
-
-        // Data for deleted message detailed info
-        // Increase value if you want to store more data (make sure you have enough RAM)
-        this.TEMPORARY_DATA_STORAGE_MAX_LENGTH = 1000
-        this.backedUpMessagesTemporaryData = []
+        this.userDeleteMessageNotificationManager = userDeleteMessageNotificationManager
     }
 
-    async backupMessageToChannel(action) {
+    async processAction(action) {
         if (
             this.backupChannelId &&
             (action instanceof Api.UpdateShortMessage ||
@@ -35,15 +17,13 @@ class UserChatMessagesBackupManager {
                 action instanceof Api.UpdateNewMessage ||
                 action instanceof Api.UpdateNewChannelMessage)
         ) {
-            if (!(await this.isChatNotificationsIsTurnOn(action))) return
+            if (!(await this.isChatNotificationsIsTurnOnByAction(action))) return
 
-            this.backupNewMessageToChannel(action)
-        } else if (action instanceof Api.UpdateDeleteMessages || action instanceof Api.UpdateDeleteChannelMessages) {
-            this.notifyUserAboutDeletedMessages(action)
+            this.backupMessageToChannel(action)
         }
     }
 
-    async isChatNotificationsIsTurnOn(action) {
+    async isChatNotificationsIsTurnOnByAction(action) {
         const allChatsNotifyExceptions = await getNotifyExceptionsSafe(this.client, { peer: this.telegramClientUserId })
         if (!Array.isArray(allChatsNotifyExceptions?.updates)) return false
 
@@ -68,7 +48,7 @@ class UserChatMessagesBackupManager {
         return !isNotificationIsTurnOff
     }
 
-    async backupNewMessageToChannel(action) {
+    async backupMessageToChannel(action) {
         const isMessageOut = action?.message?.out || action.out
         if (!isMessageOut) {
             const fromPeerId =
@@ -77,6 +57,10 @@ class UserChatMessagesBackupManager {
                 action?.fromId?.value ||
                 action?.userId?.value
             const messageId = action?.message?.id || action?.id
+
+            if (fromPeerId === this.backupChannelId) {
+                return
+            }
 
             forwardMessagesSafe(this.client, {
                 fromPeer: fromPeerId,
@@ -90,21 +74,13 @@ class UserChatMessagesBackupManager {
                 action?.message?.peerId?.userId?.value ||
                 action?.chatId?.value ||
                 action?.userId?.value
-            this.backedUpMessagesTemporaryData.push({
+
+            this.userDeleteMessageNotificationManager.addBackedUpMessageTemporaryData({
                 messageId,
                 fromPeerId,
                 chatId,
                 sentAt: new Date(),
             })
-
-            if (this.backedUpMessagesTemporaryData.length > this.TEMPORARY_DATA_STORAGE_MAX_LENGTH) {
-                const lengthDifference =
-                    this.backedUpMessagesTemporaryData.length - this.TEMPORARY_DATA_STORAGE_MAX_LENGTH
-                this.backedUpMessagesTemporaryData.splice(
-                    this.backedUpMessagesTemporaryData.length - lengthDifference,
-                    lengthDifference,
-                )
-            }
         }
     }
 
@@ -125,61 +101,6 @@ class UserChatMessagesBackupManager {
             if (createdBackupChannel && createdBackupChannel.id && createdBackupChannel.id.value) {
                 this.backupChannelId = createdBackupChannel.id.value
             }
-        }
-    }
-
-    async notifyUserAboutDeletedMessages(action) {
-        let processTime = new Date()
-        let deletedMessageNotificationText
-        if (action instanceof Api.UpdateDeleteChannelMessages) {
-            const { value: deleteMessagesChannelId } = action.channelId
-            const { messages: deletedMessagesIds } = action
-            const detailedDeletedMessageData = this.backedUpMessagesTemporaryData.find((dataItem) => {
-                return (
-                    dataItem.fromPeerId === deleteMessagesChannelId &&
-                    deletedMessagesIds.some((deletedMessageId) => dataItem.messageId === deletedMessageId)
-                )
-            })
-
-            if (detailedDeletedMessageData) {
-                const channelData = await getChannelSafe(this.client, detailedDeletedMessageData.fromPeerId)
-                deletedMessageNotificationText = createChannelDeleteMessageText(
-                    channelData,
-                    detailedDeletedMessageData.sentAt,
-                    deletedMessagesIds,
-                )
-            } else {
-                deletedMessageNotificationText = createSomeChannelDeleteMessageText(deletedMessagesIds)
-            }
-        } else {
-            const { messages: deletedMessagesIds } = action
-            const detailedDeletedMessageData = this.backedUpMessagesTemporaryData.find((dataItem) => {
-                return deletedMessagesIds.some((deletedMessageId) => dataItem.messageId === deletedMessageId)
-            })
-
-            if (detailedDeletedMessageData) {
-                const userData = await getUserSafe(this.client, detailedDeletedMessageData.fromPeerId)
-                const chatData = await getChatSafe(this.client, detailedDeletedMessageData.chatId)
-                deletedMessageNotificationText = createUserDeleteMessageText(
-                    userData,
-                    chatData,
-                    detailedDeletedMessageData.sentAt,
-                    deletedMessagesIds,
-                )
-            } else {
-                deletedMessageNotificationText = createSomeUserDeleteMessageText(deletedMessagesIds)
-            }
-        }
-
-        logger.log(
-            'INFO',
-            'Deleted message handler',
-            deletedMessageNotificationText,
-            new Date() - processTime.getTime(),
-        )
-
-        if (process.env.SAVED_MESSAGES_LOGGER_ENABLED === 'true') {
-            await this.client.sendMessage('me', { message: deletedMessageNotificationText })
         }
     }
 
