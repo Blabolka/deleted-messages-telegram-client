@@ -1,6 +1,7 @@
 const { initTelegramClient } = require('./telegramClient')
 const { initUserTypingActionCron } = require('./crons/userTypingActionCron')
-const userTypingActionManager = require('./services/UserTypingActionManager')
+const { UserTypingActionManager } = require('./services/UserTypingActionManager')
+const { UserDeleteMessageNotificationManager } = require('./services/UserDeleteMessageNotificationManager')
 const { TelegramClientCommands } = require('./services/TelegramClientCommands')
 const { UserChatMessagesBackupManager } = require('./services/UserChatMessagesBackupManager')
 
@@ -13,16 +14,33 @@ initTelegramClient().then(async (client) => {
     const telegramClientUser = await client.getMe()
     const { value: telegramClientUserId } = telegramClientUser.id
 
-    initUserTypingActionCron(client)
+    console.log('Setup telegram client commands manager')
+    const telegramClientCommands = new TelegramClientCommands(client, telegramClientUserId)
+
+    console.log('Setup user typing actions manager')
+    const userTypingActionManager = new UserTypingActionManager()
+    initUserTypingActionCron(client, userTypingActionManager)
+
+    console.log('Setup deleted messages notification manager')
+    const userDeleteMessageNotificationManager = new UserDeleteMessageNotificationManager(
+        client,
+        telegramClientUserId,
+        1000,
+    )
 
     console.log('Setup message backups channel')
-    const chatMessagesBackupManager = new UserChatMessagesBackupManager(client)
+    const chatMessagesBackupManager = new UserChatMessagesBackupManager(
+        client,
+        telegramClientUserId,
+        userDeleteMessageNotificationManager,
+    )
     await chatMessagesBackupManager.setupBackupChannel()
 
     console.log('Telegram client is running!')
     client.addEventHandler((action) => {
-        userTypingActionManager.addAction(action)
-        chatMessagesBackupManager.backupMessageToChannel(action)
-        new TelegramClientCommands(client, telegramClientUserId).resolveCommand(action)
+        telegramClientCommands.processAction(action)
+        userTypingActionManager.processAction(action)
+        chatMessagesBackupManager.processAction(action)
+        userDeleteMessageNotificationManager.processAction(action)
     })
 })

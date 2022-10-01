@@ -26,7 +26,7 @@ class UserTypingActionManager {
         this.userTypingStorageMap.delete(userId)
     }
 
-    addAction(action) {
+    processAction(action) {
         if (!(action instanceof Api.UpdateUserTyping)) return
 
         if (action && action.userId) {
@@ -41,6 +41,6 @@ class UserTypingActionManager {
     }
 }
 
-const userTypingActionManager = new UserTypingActionManager()
-
-module.exports = userTypingActionManager
+module.exports = {
+    UserTypingActionManager,
+}
