@@ -1,11 +1,11 @@
 const config = require('./utils/config')
-const notificationManager = require('./services/NotificationManager')
 const { initTelegramClient } = require('./telegramClient')
+const notificationManager = require('./services/NotificationManager')
 const { initUserTypingActionCron } = require('./crons/userTypingActionCron')
-const { UserTypingActionManager } = require('./services/UserTypingActionManager')
-const { UserDeleteMessageNotificationManager } = require('./services/UserDeleteMessageNotificationManager')
 const { TelegramClientCommands } = require('./services/TelegramClientCommands')
+const { UserTypingActionManager } = require('./services/UserTypingActionManager')
 const { UserChatMessagesBackupManager } = require('./services/UserChatMessagesBackupManager')
+const { UserDeleteMessageNotificationManager } = require('./services/UserDeleteMessageNotificationManager')
 
 // For JSON.stringify correct working
 BigInt.prototype.toJSON = function () {

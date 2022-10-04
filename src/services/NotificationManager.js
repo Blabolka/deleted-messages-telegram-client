@@ -1,6 +1,6 @@
 const config = require('../utils/config')
-const { WebClient } = require('@slack/web-api')
 const { TelegramClient } = require('telegram')
+const { WebClient } = require('@slack/web-api')
 
 class NotificationManager {
     constructor(slackNotificationProps, consoleNotificationProps, savedMessagesNotificationProps) {

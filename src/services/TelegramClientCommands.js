@@ -1,5 +1,5 @@
-const notificationManager = require('./NotificationManager')
 const { Api } = require('telegram')
+const notificationManager = require('./NotificationManager')
 
 class TelegramClientCommands {
     constructor(client, telegramClientUserId) {
@@ -41,7 +41,7 @@ class TelegramClientCommands {
     }
 
     async sendStatusCommandProcessing() {
-        await this.client.sendMessage('me', { message: 'Telegram client is alive!' })
+        await notificationManager.logToSavedMessages('Telegram client is alive!')
     }
 }
 

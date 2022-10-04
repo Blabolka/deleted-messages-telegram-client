@@ -1,7 +1,7 @@
 const { Api } = require('telegram')
+const notificationManager = require('../services/NotificationManager')
 const { getChannelSafe, getUserSafe, getChatSafe } = require('../api/safeApiCalls')
 const { createChannelDeleteMessageText, createUserDeleteMessageText } = require('../utils/userFormatUtils')
-const notificationManager = require('../services/NotificationManager')
 
 class UserDeleteMessageNotificationManager {
     constructor(client, telegramClientUserId, temporaryDataStorageMaxLength) {
