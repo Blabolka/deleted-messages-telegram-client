@@ -70,6 +70,7 @@ class UserChatMessagesBackupManager {
                 toPeer: this.backupChannelId,
             })
 
+            const messageDate = action?.message?.date || action?.date
             const chatId =
                 action?.message?.peerId?.channelId?.value ||
                 action?.message?.peerId?.chatId?.value ||
@@ -82,7 +83,7 @@ class UserChatMessagesBackupManager {
                     messageId,
                     fromPeerId,
                     chatId,
-                    sentAt: new Date(),
+                    sentAt: messageDate,
                 })
             }
         }

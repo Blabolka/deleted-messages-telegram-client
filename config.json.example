@@ -24,7 +24,12 @@
             "notifications": {
                 "disableNotifications": false,
                 "temporaryDataStorageMaxLength": 1000
+                "useMongoDatabaseAsTemporaryDataStorage": false
             }
         }
+    },
+    "mongoDatabase": {
+        "enabled": false,
+        "mongoDatabaseConnectionUrl": "*your-mongo-database-string-connection*"
     }
 }
