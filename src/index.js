@@ -1,3 +1,4 @@
+const config = require('./utils/config')
 const notificationManager = require('./services/NotificationManager')
 const { initTelegramClient } = require('./telegramClient')
 const { initUserTypingActionCron } = require('./crons/userTypingActionCron')
@@ -20,30 +21,39 @@ initTelegramClient().then(async (client) => {
     console.log('Setup telegram client commands manager')
     const telegramClientCommands = new TelegramClientCommands(client, telegramClientUserId)
 
-    console.log('Setup user typing actions manager')
-    const userTypingActionManager = new UserTypingActionManager()
-    initUserTypingActionCron(client, userTypingActionManager)
+    let userTypingActionManager
+    if (config.features.usersWhoStartedTypingButDidNotSendIt.enabled) {
+        console.log('Setup user typing actions manager')
+        userTypingActionManager = new UserTypingActionManager()
+        initUserTypingActionCron(client, userTypingActionManager)
+    }
 
-    console.log('Setup deleted messages notification manager')
-    const userDeleteMessageNotificationManager = new UserDeleteMessageNotificationManager(
-        client,
-        telegramClientUserId,
-        1000,
-    )
+    let userDeleteMessageNotificationManager
+    let chatMessagesBackupManager
 
-    console.log('Setup message backups channel')
-    const chatMessagesBackupManager = new UserChatMessagesBackupManager(
-        client,
-        telegramClientUserId,
-        userDeleteMessageNotificationManager,
-    )
-    await chatMessagesBackupManager.setupBackupChannel()
+    if (config.features.messagesBackupsAndDeletedMessagesNotifications.enabled) {
+        if (!config.features.messagesBackupsAndDeletedMessagesNotifications.notifications.disableNotifications) {
+            console.log('Setup deleted messages notification manager')
+            userDeleteMessageNotificationManager = new UserDeleteMessageNotificationManager(
+                client,
+                telegramClientUserId,
+            )
+        }
+
+        console.log('Setup message backups channel')
+        chatMessagesBackupManager = new UserChatMessagesBackupManager(
+            client,
+            telegramClientUserId,
+            userDeleteMessageNotificationManager,
+        )
+        await chatMessagesBackupManager.setupBackupChannel()
+    }
 
     console.log('Telegram client is running!')
     client.addEventHandler((action) => {
         telegramClientCommands.processAction(action)
-        userTypingActionManager.processAction(action)
-        chatMessagesBackupManager.processAction(action)
-        userDeleteMessageNotificationManager.processAction(action)
+        userTypingActionManager && userTypingActionManager.processAction(action)
+        chatMessagesBackupManager && chatMessagesBackupManager.processAction(action)
+        userDeleteMessageNotificationManager && userDeleteMessageNotificationManager.processAction(action)
     })
 })

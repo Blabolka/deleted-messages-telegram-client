@@ -13,5 +13,17 @@
             "slackAccessToken": "xoxb-*your-token-from-slack-app*",
             "slackChannelId": "*channel-id-from-slack-workspace*"
         }
+    },
+    "features": {
+        "usersWhoStartedTypingButDidNotSendIt": {
+            "enabled": true
+        },
+        "messagesBackupsAndDeletedMessagesNotifications": {
+            "enabled": true,
+            "notifications": {
+                "disableNotifications": false,
+                "temporaryDataStorageMaxLength": 1000
+            }
+        }
     }
 }

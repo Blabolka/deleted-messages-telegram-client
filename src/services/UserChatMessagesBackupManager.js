@@ -75,12 +75,14 @@ class UserChatMessagesBackupManager {
                 action?.chatId?.value ||
                 action?.userId?.value
 
-            this.userDeleteMessageNotificationManager.addBackedUpMessageTemporaryData({
-                messageId,
-                fromPeerId,
-                chatId,
-                sentAt: new Date(),
-            })
+            if (this.userDeleteMessageNotificationManager) {
+                this.userDeleteMessageNotificationManager.addBackedUpMessageTemporaryData({
+                    messageId,
+                    fromPeerId,
+                    chatId,
+                    sentAt: new Date(),
+                })
+            }
         }
     }
 

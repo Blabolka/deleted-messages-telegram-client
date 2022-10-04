@@ -1,24 +1,24 @@
 {
-  "name": "statistics-telegram-client",
-  "version": "0.0.1",
-  "description": "Telegram client for viewing data that telegram itself does not provide",
-  "main": "index.js",
-  "scripts": {
-    "start": "dotenv node src/index.js",
-    "start:dev": "dotenv nodemon src/index.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@slack/web-api": "^6.7.2",
-    "dotenv-cli": "^6.0.0",
-    "input": "^1.0.1",
-    "node-cron": "3.0.0",
-    "telegram": "^2.10.2"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.19",
-    "prettier": "^2.7.1"
-  }
+    "name": "statistics-telegram-client",
+    "version": "0.0.1",
+    "description": "Telegram client for viewing data that telegram itself does not provide",
+    "main": "index.js",
+    "scripts": {
+        "start": "dotenv node src/index.js",
+        "start:dev": "dotenv nodemon src/index.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@slack/web-api": "^6.7.2",
+        "dotenv-cli": "^6.0.0",
+        "input": "^1.0.1",
+        "node-cron": "3.0.0",
+        "telegram": "^2.10.2"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.19",
+        "prettier": "^2.7.1"
+    }
 }
