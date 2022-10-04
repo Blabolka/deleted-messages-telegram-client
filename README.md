@@ -5,7 +5,7 @@
 
 # How to get started
 
-- Create _.env_ file based on _.env.example_ with your API_KEY and API_HASH. More information can be
+- Create _config.json_ file based on _config.json.example_ with your API_ID and API_HASH. More information can be
   found [here](https://core.telegram.org/api/obtaining_api_id)
 
 ```bash

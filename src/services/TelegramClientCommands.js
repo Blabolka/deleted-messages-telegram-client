@@ -1,5 +1,5 @@
-const logger = require('./Logger')
 const { Api } = require('telegram')
+const notificationManager = require('./NotificationManager')
 
 class TelegramClientCommands {
     constructor(client, telegramClientUserId) {
@@ -31,7 +31,7 @@ class TelegramClientCommands {
                 }
             }
         } catch (err) {
-            logger.log(
+            notificationManager.log(
                 'ERROR',
                 'Client command processing error',
                 `ACTION: ${JSON.stringify(action, null, 4)}\nERROR: ${JSON.stringify(err.message || err, null, 4)}`,
@@ -41,7 +41,7 @@ class TelegramClientCommands {
     }
 
     async sendStatusCommandProcessing() {
-        await this.client.sendMessage('me', { message: 'Telegram client is alive!' })
+        await notificationManager.logToSavedMessages('Telegram client is alive!')
     }
 }
 

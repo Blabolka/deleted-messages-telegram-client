@@ -1,7 +1,7 @@
 const { Api } = require('telegram')
+const notificationManager = require('../services/NotificationManager')
 const { getChannelSafe, getUserSafe, getChatSafe } = require('../api/safeApiCalls')
 const { createChannelDeleteMessageText, createUserDeleteMessageText } = require('../utils/userFormatUtils')
-const logger = require('../services/Logger')
 
 class UserDeleteMessageNotificationManager {
     constructor(client, telegramClientUserId, temporaryDataStorageMaxLength) {
@@ -74,16 +74,12 @@ class UserDeleteMessageNotificationManager {
         }
 
         if (deletedMessageNotificationText) {
-            logger.log(
+            notificationManager.log(
                 'INFO',
                 'Deleted messages handler',
                 deletedMessageNotificationText,
                 new Date() - processTime.getTime(),
             )
-
-            if (process.env.SAVED_MESSAGES_LOGGER_ENABLED === 'true') {
-                await this.client.sendMessage('me', { message: deletedMessageNotificationText })
-            }
         }
     }
 }

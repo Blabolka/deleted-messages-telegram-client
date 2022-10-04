@@ -1,5 +1,5 @@
 const cron = require('node-cron')
-const logger = require('../services/Logger')
+const notificationManager = require('../services/NotificationManager')
 const { createUserTypingMessageText } = require('../utils/userFormatUtils')
 const { getChatHistoryMessagesSafe, getUserSafe, getUserCommonChatsSafe } = require('../api/safeApiCalls')
 
@@ -35,14 +35,10 @@ const initUserTypingActionCron = (client, userTypingActionManager) => {
                             commonChats,
                             singleUserAction,
                         )
-                        logger.log('INFO', 'User typing cron', message, new Date() - processTime.getTime())
-
-                        if (process.env.SAVED_MESSAGES_LOGGER_ENABLED === 'true') {
-                            await client.sendMessage('me', { message })
-                        }
+                        notificationManager.log('INFO', 'User typing cron', message, new Date() - processTime.getTime())
                     }
                 } catch (err) {
-                    logger.log(
+                    notificationManager.log(
                         'ERROR',
                         'User typing cron error',
                         `DATA: ${JSON.stringify(singleUserAction, null, 4)}\nERROR: ${JSON.stringify(
