@@ -2,11 +2,13 @@ const { Api } = require('telegram')
 const { createChannelSafe, forwardMessagesSafe, getNotifyExceptionsSafe } = require('../api/safeApiCalls')
 
 class UserChatMessagesBackupManager {
-    constructor(client, telegramClientUserId, userDeleteMessageNotificationManager) {
+    constructor(client, telegramClientUserId, userDeleteMessageNotificationManager, options = {}) {
         this.client = client
         this.backupChannelId = null
         this.telegramClientUserId = telegramClientUserId
         this.userDeleteMessageNotificationManager = userDeleteMessageNotificationManager
+
+        this.options = options
     }
 
     async processAction(action) {
@@ -17,7 +19,7 @@ class UserChatMessagesBackupManager {
                 action instanceof Api.UpdateNewMessage ||
                 action instanceof Api.UpdateNewChannelMessage)
         ) {
-            if (!(await this.isChatNotificationsIsTurnOnByAction(action))) return
+            if (!this.options.includeMutedChats && !(await this.isChatNotificationsIsTurnOnByAction(action))) return
 
             this.backupMessageToChannel(action)
         }
@@ -68,6 +70,7 @@ class UserChatMessagesBackupManager {
                 toPeer: this.backupChannelId,
             })
 
+            const messageDate = action?.message?.date || action?.date
             const chatId =
                 action?.message?.peerId?.channelId?.value ||
                 action?.message?.peerId?.chatId?.value ||
@@ -75,12 +78,14 @@ class UserChatMessagesBackupManager {
                 action?.chatId?.value ||
                 action?.userId?.value
 
-            this.userDeleteMessageNotificationManager.addBackedUpMessageTemporaryData({
-                messageId,
-                fromPeerId,
-                chatId,
-                sentAt: new Date(),
-            })
+            if (this.userDeleteMessageNotificationManager) {
+                this.userDeleteMessageNotificationManager.addBackedUpMessageTemporaryData({
+                    messageId,
+                    fromPeerId,
+                    chatId,
+                    sentAt: messageDate,
+                })
+            }
         }
     }
 

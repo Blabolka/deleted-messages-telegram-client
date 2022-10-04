@@ -29,7 +29,7 @@ const createChannelDeleteMessageText = (fullChannelInfo, deletedMessageSentAtDat
     const pluralMessagesWord = deletedMessagesIds.length > 1 ? 'messages' : 'message'
     const capitalizedPluralMessagesWord = deletedMessagesIds.length > 1 ? 'Messages' : 'Message'
     const message = [
-        `Channel delete ${pluralMessagesWord}`,
+        `Channel delete ${deletedMessagesIds.length} ${pluralMessagesWord}`,
         `Channel: ${title}${usernameValidated}`,
         `${capitalizedPluralMessagesWord} sent at: ${new Date(deletedMessageSentAtDate).toISOString()}`,
         `${capitalizedPluralMessagesWord} deleted at: ${new Date().toISOString()}`,
@@ -48,7 +48,7 @@ const createUserDeleteMessageText = (fullUserInfo, fullChatData, deletedMessageS
     const pluralMessagesWord = deletedMessagesIds.length > 1 ? 'messages' : 'message'
     const capitalizedPluralMessagesWord = deletedMessagesIds.length > 1 ? 'Messages' : 'Message'
     const message = [
-        `User delete ${pluralMessagesWord}`,
+        `User delete ${deletedMessagesIds.length} ${pluralMessagesWord}`,
         `User: ${firstName}${lastNameValidated}${usernameValidated}`,
         chatTitle ? `Chat: ${chatTitle}` : '',
         `${capitalizedPluralMessagesWord} sent at: ${new Date(deletedMessageSentAtDate).toISOString()}`,
