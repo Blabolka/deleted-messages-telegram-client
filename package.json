@@ -1,7 +1,7 @@
 {
   "name": "statistics-telegram-client",
   "version": "0.0.1",
-  "description": "Telegram client for checking your statistics",
+  "description": "Telegram client for viewing data that telegram itself does not provide",
   "main": "index.js",
   "scripts": {
     "start": "dotenv node src/index.js",
