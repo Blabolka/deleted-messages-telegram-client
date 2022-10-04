@@ -1,16 +1,24 @@
 const { Api } = require('telegram')
 const notificationManager = require('../services/NotificationManager')
+const { convertObjectBigIntKeysToNumber } = require('../utils/bigintUtils')
 const { getChannelSafe, getUserSafe, getChatSafe } = require('../api/safeApiCalls')
+const {
+    addNotificationData,
+    deleteManyElementsByLimit,
+    findManyNotificationsAndDelete,
+    getNotificationsDataDocumentsCount,
+} = require('../tools/database/api/deleteMessagesNoficationsData')
 const { createChannelDeleteMessageText, createUserDeleteMessageText } = require('../utils/userFormatUtils')
 
 class UserDeleteMessageNotificationManager {
-    constructor(client, telegramClientUserId, temporaryDataStorageMaxLength) {
+    constructor(client, telegramClientUserId, options = {}) {
         this.client = client
         this.telegramClientUserId = telegramClientUserId
 
         // Data for deleted message detailed info
-        // Increase value if you want to store more data (make sure you have enough RAM)
-        this.TEMPORARY_DATA_STORAGE_MAX_LENGTH = temporaryDataStorageMaxLength
+        // Increase value if you want to store more data (make sure you have enough RAM or database capacity)
+        this.TEMPORARY_DATA_STORAGE_MAX_LENGTH = options.temporaryDataStorageMaxLength || 1000
+        this.useMongoDatabaseAsTemporaryDataStorage = options.useMongoDatabaseAsTemporaryDataStorage || false
         this.backedUpMessagesTemporaryData = []
     }
 
@@ -20,17 +28,29 @@ class UserDeleteMessageNotificationManager {
         }
     }
 
-    addBackedUpMessageTemporaryData(dataItem) {
+    async addBackedUpMessageTemporaryData(dataItem) {
         if (dataItem.fromPeerId === this.telegramClientUserId) return
 
-        this.backedUpMessagesTemporaryData.push(dataItem)
+        if (this.useMongoDatabaseAsTemporaryDataStorage) {
+            await addNotificationData(convertObjectBigIntKeysToNumber(dataItem))
 
-        if (this.backedUpMessagesTemporaryData.length > this.TEMPORARY_DATA_STORAGE_MAX_LENGTH) {
-            const lengthDifference = this.backedUpMessagesTemporaryData.length - this.TEMPORARY_DATA_STORAGE_MAX_LENGTH
-            this.backedUpMessagesTemporaryData.splice(
-                this.backedUpMessagesTemporaryData.length - lengthDifference,
-                lengthDifference,
-            )
+            const notificationCollectionDocumentsCount = await getNotificationsDataDocumentsCount()
+
+            if (notificationCollectionDocumentsCount > this.TEMPORARY_DATA_STORAGE_MAX_LENGTH) {
+                const lengthDifference = notificationCollectionDocumentsCount - this.TEMPORARY_DATA_STORAGE_MAX_LENGTH
+                deleteManyElementsByLimit(lengthDifference)
+            }
+        } else {
+            this.backedUpMessagesTemporaryData.push(dataItem)
+
+            if (this.backedUpMessagesTemporaryData.length > this.TEMPORARY_DATA_STORAGE_MAX_LENGTH) {
+                const lengthDifference =
+                    this.backedUpMessagesTemporaryData.length - this.TEMPORARY_DATA_STORAGE_MAX_LENGTH
+                this.backedUpMessagesTemporaryData.splice(
+                    this.backedUpMessagesTemporaryData.length - lengthDifference,
+                    lengthDifference,
+                )
+            }
         }
     }
 
@@ -40,26 +60,48 @@ class UserDeleteMessageNotificationManager {
         if (action instanceof Api.UpdateDeleteChannelMessages) {
             const { value: deleteMessagesChannelId } = action.channelId
             const { messages: deletedMessagesIds } = action
-            const detailedDeletedMessageData = this.backedUpMessagesTemporaryData.find((dataItem) => {
-                return (
-                    dataItem.fromPeerId === deleteMessagesChannelId &&
-                    deletedMessagesIds.some((deletedMessageId) => dataItem.messageId === deletedMessageId)
-                )
-            })
+            let detailedDeletedMessageData
+            if (this.useMongoDatabaseAsTemporaryDataStorage) {
+                detailedDeletedMessageData = (
+                    await findManyNotificationsAndDelete(
+                        convertObjectBigIntKeysToNumber({
+                            fromPeerId: deleteMessagesChannelId,
+                            messages: deletedMessagesIds,
+                        }),
+                    )
+                )[0]
+            } else {
+                detailedDeletedMessageData = this.backedUpMessagesTemporaryData.find((dataItem) => {
+                    return (
+                        dataItem.fromPeerId === deleteMessagesChannelId &&
+                        deletedMessagesIds.some((deletedMessageId) => dataItem.messageId === deletedMessageId)
+                    )
+                })
+            }
 
             if (detailedDeletedMessageData) {
                 const channelData = await getChannelSafe(this.client, detailedDeletedMessageData.fromPeerId)
                 deletedMessageNotificationText = createChannelDeleteMessageText(
                     channelData,
-                    detailedDeletedMessageData.sentAt,
+                    new Date(detailedDeletedMessageData.sentAt * 1000),
                     deletedMessagesIds,
                 )
             }
         } else {
             const { messages: deletedMessagesIds } = action
-            const detailedDeletedMessageData = this.backedUpMessagesTemporaryData.find((dataItem) => {
-                return deletedMessagesIds.some((deletedMessageId) => dataItem.messageId === deletedMessageId)
-            })
+
+            let detailedDeletedMessageData
+            if (this.useMongoDatabaseAsTemporaryDataStorage) {
+                detailedDeletedMessageData = (
+                    await findManyNotificationsAndDelete(
+                        convertObjectBigIntKeysToNumber({ messages: deletedMessagesIds }),
+                    )
+                )[0]
+            } else {
+                detailedDeletedMessageData = this.backedUpMessagesTemporaryData.find((dataItem) => {
+                    return deletedMessagesIds.some((deletedMessageId) => dataItem.messageId === deletedMessageId)
+                })
+            }
 
             if (detailedDeletedMessageData) {
                 const userData = await getUserSafe(this.client, detailedDeletedMessageData.fromPeerId)
@@ -67,7 +109,7 @@ class UserDeleteMessageNotificationManager {
                 deletedMessageNotificationText = createUserDeleteMessageText(
                     userData,
                     chatData,
-                    detailedDeletedMessageData.sentAt,
+                    new Date(detailedDeletedMessageData.sentAt * 1000),
                     deletedMessagesIds,
                 )
             }

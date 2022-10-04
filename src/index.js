@@ -1,4 +1,5 @@
 const config = require('./utils/config')
+const { connectToMongoDatabase } = require('./tools/database')
 const { initTelegramClient } = require('./telegramClient')
 const notificationManager = require('./services/NotificationManager')
 const { initUserTypingActionCron } = require('./crons/userTypingActionCron')
@@ -13,11 +14,15 @@ BigInt.prototype.toJSON = function () {
 }
 
 initTelegramClient().then(async (client) => {
-    notificationManager.setTelegramClient(client)
-
     const telegramClientUser = await client.getMe()
     const { value: telegramClientUserId } = telegramClientUser.id
 
+    notificationManager.setTelegramClient(client)
+
+    if (config.mongoDatabase.enabled) {
+        console.log('Connect to database')
+        await connectToMongoDatabase()
+    }
     console.log('Setup telegram client commands manager')
     const telegramClientCommands = new TelegramClientCommands(client, telegramClientUserId)
 
@@ -37,7 +42,15 @@ initTelegramClient().then(async (client) => {
             userDeleteMessageNotificationManager = new UserDeleteMessageNotificationManager(
                 client,
                 telegramClientUserId,
-                config.features.messagesBackupsAndDeletedMessagesNotifications.notifications.temporaryDataStorageMaxLength,
+                {
+                    temporaryDataStorageMaxLength:
+                        config.features.messagesBackupsAndDeletedMessagesNotifications.notifications
+                            .temporaryDataStorageMaxLength,
+                    useMongoDatabaseAsTemporaryDataStorage:
+                        config.mongoDatabase.enabled &&
+                        config.features.messagesBackupsAndDeletedMessagesNotifications.notifications
+                            .useMongoDatabaseAsTemporaryDataStorage,
+                },
             )
         }
 
