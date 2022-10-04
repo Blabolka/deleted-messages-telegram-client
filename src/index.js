@@ -46,6 +46,9 @@ initTelegramClient().then(async (client) => {
             client,
             telegramClientUserId,
             userDeleteMessageNotificationManager,
+            {
+                includeMutedChats: config.features.messagesBackupsAndDeletedMessagesNotifications.includeMutedChats,
+            },
         )
         await chatMessagesBackupManager.setupBackupChannel()
     }

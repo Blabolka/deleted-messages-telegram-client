@@ -20,6 +20,7 @@
         },
         "messagesBackupsAndDeletedMessagesNotifications": {
             "enabled": true,
+            "includeMutedChats": false,
             "notifications": {
                 "disableNotifications": false,
                 "temporaryDataStorageMaxLength": 1000
