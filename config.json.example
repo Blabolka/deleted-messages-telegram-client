@@ -1,0 +1,17 @@
+{
+    "API_ID": "YOUR_API_ID",
+    "API_HASH": "YOUR_API_HASH",
+    "notifications": {
+        "consoleNotifications": {
+            "enabled": true
+        },
+        "savedMessagesNotifications": {
+            "enabled": false
+        },
+        "slackNotifications": {
+            "enabled": false,
+            "slackAccessToken": "xoxb-*your-token-from-slack-app*",
+            "slackChannelId": "*channel-id-from-slack-workspace*"
+        }
+    }
+}

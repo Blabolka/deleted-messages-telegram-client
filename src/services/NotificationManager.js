@@ -1,3 +1,4 @@
+const config = require('../utils/config')
 const { WebClient } = require('@slack/web-api')
 const { TelegramClient } = require('telegram')
 
@@ -70,16 +71,15 @@ class NotificationManager {
 }
 
 const slackNotificationProps = {
-    slackNotificationsEnabled: process.env.SLACK_LOGGER_ENABLED === 'true' || false,
-    slackAccessToken: process.env.SLACK_LOGGER_ACCESS_TOKEN || '',
-    slackChannelId: process.env.SLACK_LOGGER_CHANNEL_ID || '',
+    slackNotificationsEnabled: config.notifications.slackNotifications.enabled,
+    slackAccessToken: config.notifications.slackNotifications.slackAccessToken,
+    slackChannelId: config.notifications.slackNotifications.slackChannelId,
 }
 const consoleNotificationProps = {
-    consoleNotificationsEnabled: process.env.CONSOLE_LOGGER_ENABLED === 'true' || false,
+    consoleNotificationsEnabled: config.notifications.consoleNotifications.enabled,
 }
-
 const savedMessagesNotificationProps = {
-    savedMessagesNotificationsEnabled: false,
+    savedMessagesNotificationsEnabled: config.notifications.savedMessagesNotifications.enabled,
 }
 
 const notificationManager = new NotificationManager(
