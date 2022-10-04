@@ -1,3 +1,4 @@
+const notificationManager = require('./services/NotificationManager')
 const { initTelegramClient } = require('./telegramClient')
 const { initUserTypingActionCron } = require('./crons/userTypingActionCron')
 const { UserTypingActionManager } = require('./services/UserTypingActionManager')
@@ -11,6 +12,8 @@ BigInt.prototype.toJSON = function () {
 }
 
 initTelegramClient().then(async (client) => {
+    notificationManager.setTelegramClient(client)
+
     const telegramClientUser = await client.getMe()
     const { value: telegramClientUserId } = telegramClientUser.id
 

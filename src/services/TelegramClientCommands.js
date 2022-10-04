@@ -1,4 +1,4 @@
-const logger = require('./Logger')
+const notificationManager = require('./NotificationManager')
 const { Api } = require('telegram')
 
 class TelegramClientCommands {
@@ -31,7 +31,7 @@ class TelegramClientCommands {
                 }
             }
         } catch (err) {
-            logger.log(
+            notificationManager.log(
                 'ERROR',
                 'Client command processing error',
                 `ACTION: ${JSON.stringify(action, null, 4)}\nERROR: ${JSON.stringify(err.message || err, null, 4)}`,
