@@ -37,6 +37,7 @@ initTelegramClient().then(async (client) => {
             userDeleteMessageNotificationManager = new UserDeleteMessageNotificationManager(
                 client,
                 telegramClientUserId,
+                config.features.messagesBackupsAndDeletedMessagesNotifications.notifications.temporaryDataStorageMaxLength,
             )
         }
 
